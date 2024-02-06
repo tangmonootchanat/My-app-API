@@ -25,7 +25,36 @@ con.connect(function(err) {
   if (err) throw err;
   console.log("Connected!");
 });
+app.post('/register', async (req, res) => {
+  const { id,Username, Password, confirmPassword } = req.body;
 
+  
+  if (Password !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do not match' });
+  }
+
+  try {
+   
+    const hashedPassword = await bcrypt.hash(Password, 6);
+
+    
+    const query = `INSERT INTO tbl_logins (id, Username, Password) VALUES (?, ?, ?)`;
+    const values = [id, Username, hashedPassword];
+
+    con.query(query, values, (err, results) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+
+      
+      res.status(201).json({ message: 'Register successful', userId: results.insertId });
+    });
+  } catch (error) {
+    console.error('Error hashing password:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 //creat User Login
 app.post('/apis/creatLogin', (req, res) => {
   var LoginUsername = _.get(req, ['body','Username']);
