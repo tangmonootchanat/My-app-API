@@ -25,8 +25,10 @@ con.connect(function(err) {
   if (err) throw err;
   console.log("Connected!");
 });
+
+//Som-o
 app.post('/register', async (req, res) => {
-  const { id,Username, Password, confirmPassword } = req.body;
+  const { Id , Username, Password, confirmPassword } = req.body;
 
   
   if (Password !== confirmPassword) {
@@ -34,12 +36,8 @@ app.post('/register', async (req, res) => {
   }
 
   try {
-   
-    const hashedPassword = await bcrypt.hash(Password, 6);
-
-    
     const query = `INSERT INTO tbl_logins (id, Username, Password) VALUES (?, ?, ?)`;
-    const values = [id, Username, hashedPassword];
+    const values = [Id , Username, Password];
 
     con.query(query, values, (err, results) => {
       if (err) {
@@ -55,7 +53,8 @@ app.post('/register', async (req, res) => {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-//creat User Login
+
+//creat User Login Tang-mo
 app.post('/apis/creatLogin', (req, res) => {
   var LoginUsername = _.get(req, ['body','Username']);
   var LoginPassword = _.get(req, ['body','Password']);
@@ -276,5 +275,70 @@ app.get('/apis/getallLogin', (req, res) => {
 //     })
 //   }
 // })
+
+//E-ham
+app.get("/test", (req, res) => {
+  const query = "SELECT * FROM tbl_logins"; 
+
+  con.query(query, (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    res.status(200).json({ data: results });
+  });
+});
+app.get("/test/:Id", (req, res) => {
+  const userId = req.params.Id;
+  const query = "SELECT * FROM tbl_logins WHERE Id = ?"; 
+
+  con.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({ data: results[0] });
+  });
+});
+
+app.put("/password/:Id", (req, res) => {
+  const { Id } = req.params;
+  const { newPassword, confirmNewPassword } = req.body;
+
+  // Check if new passwords match
+  if (newPassword !== confirmNewPassword) {
+    return res.status(400).json({ error: 'New passwords do not match' });
+    
+  }
+
+  // Update the password in the database
+  const updatePasswordQuery = 'UPDATE tbl_logins SET Password = ? WHERE Id = ?';
+  const updatePasswordValues = [newPassword, Id];
+
+  con.query(updatePasswordQuery, updatePasswordValues, (updatePasswordErr, updatePasswordResults) => {
+    if (updatePasswordErr) {
+      console.error('Error updating password:', updatePasswordErr);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    // Check if any rows were affected (i.e., if the user with the specified ID exists)
+    if (updatePasswordResults.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // If the password update is successful, send a success response
+    res.status(200).json({ message: 'Password updated successfully' });
+  });
+});
+
 
 module.exports = app;
