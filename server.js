@@ -321,13 +321,10 @@ app.put("/password/:Id", (req, res) => {
   const { Id } = req.params;
   const { newPassword, confirmNewPassword } = req.body;
 
-  // Check if new passwords match
   if (newPassword !== confirmNewPassword) {
     return res.status(400).json({ error: 'New passwords do not match' });
-    
   }
 
-  // Update the password in the database
   const updatePasswordQuery = 'UPDATE tbl_logins SET Password = ? WHERE Id = ?';
   const updatePasswordValues = [newPassword, Id];
 
@@ -337,13 +334,15 @@ app.put("/password/:Id", (req, res) => {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
 
-    // Check if any rows were affected (i.e., if the user with the specified ID exists)
+    // Check if any rows were affected 
     if (updatePasswordResults.affectedRows === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // If the password update is successful, send a success response
-    res.status(200).json({ message: 'Password updated successfully' });
+    const token = jwt.sign({ userId: Id }, 'yourSecretKey', { expiresIn: '1h' });
+
+    // If the password update is successful, send a success response with the token
+    res.status(200).json({ message: 'Password updated successfully', token });
   });
 });
 
