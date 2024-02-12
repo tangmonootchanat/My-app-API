@@ -36,7 +36,7 @@ app.post('/register', async (req, res) => {
   }
 
   try {
-    const query = `INSERT INTO tbl_logins (id, Username, Password) VALUES (?, ?, ?)`;
+    const query = `INSERT INTO tbl_logins (Id, Username, Password) VALUES (?, ?, ?)`;
     const values = [Id , Username, Password];
 
     con.query(query, values, (err, results) => {
@@ -56,15 +56,15 @@ app.post('/register', async (req, res) => {
 
 //creat User Login Tang-mo
 app.post('/apis/creatLogin', (req, res) => {
-  var LoginUsername = _.get(req, ['body','Username']);
-  var LoginPassword = _.get(req, ['body','Password']);
+  const LoginUsername = req.body.Username;
+  const LoginPassword = req.body.Password;
 
   console.log('LoginUsername', LoginUsername)
   console.log('LoginPassword', LoginPassword)
 
   try {
     if (LoginUsername && LoginPassword) {
-        con.query('select * from tbl_logins where Username = ? and Password = ?', [
+        con.query('SELECT * FROM tbl_logins WHERE Username = ? AND Password = ?', [
           LoginUsername, LoginPassword
         ], (err, data, Field) => {
           if (data && data.length > 0) {
@@ -111,7 +111,7 @@ app.post('/apis/creatLogin', (req, res) => {
 //get Usr Login
 app.get('/apis/getallLogin', (req, res) => {
   try {
-    con.query('select * from tbl_logins', [],
+    con.query('SELECT * FROM tbl_logins', [],
     (err, data, Fil) => {
       if (data && data[0]){
         return res.status(200).json({
@@ -141,12 +141,13 @@ app.get('/apis/getallLogin', (req, res) => {
 })
 
 // //get by id
+
 // app.get('/apis/getLoginbyID', (req, res) => {
 //   var loginid = _.get(req, ['body','Id']);
 
 //   try {
 //     if (loginid) {
-//       con.query('select * from tbl_logins where Id = ?', [
+//       con.query('SELECT * FROM tbl_logins WHERE Id = ?', [
 //         loginid
 //       ],
 //       (err, data, Fil) => {
@@ -186,47 +187,52 @@ app.get('/apis/getallLogin', (req, res) => {
 //   }
 // })
 
-// //update use login
-// app.put('/apis/updataLogin', (req, res) => {
-//   var id = _.get(req, ['body','Id']);
-//   var Username = _.get(req, ['body','Username']);
-//   var Password = _.get(req, ['body','Password']);
+// Update user password
+// app.put('/apis/updataPassword/:Id', (req, res) => {
+//   const Id = req.params.Id; // รับ Id จาก URL parameter
+//   const { Username, newPassword, confirmNewPassword } = req.body;
+
+//   // ตรวจสอบว่ารหัสผ่านใหม่และยืนยันรหัสผ่านตรงกันหรือไม่
+//   if (newPassword !== confirmNewPassword) {
+//     return res.status(403).json({ error: 'Passwords do not match' });
+//   }
 
 //   try {
-//     if (id && Username && Password) {
-//       con.query('update tbl_logins set Username = ?, Password = ? where Id = ?', [
-//         Username, Password, parseInt(id)
-//       ], (err, data, fil) => {
-//         if (data) {
+//     // ตรวจสอบว่ามีข้อมูลที่จำเป็นสำหรับการอัปเดตหรือไม่
+//     if (Id && Username && newPassword && confirmNewPassword) {
+//       // ทำการอัปเดตข้อมูลในฐานข้อมูล
+//       const updateQuery = 'UPDATE tbl_logins SET Password = ? WHERE Id = ? AND Username = ?';
+//       const updateValues = [newPassword, Id, Username];
+//       con.query(updateQuery, updateValues, (err, data, fields) => {
+//         if (err) {
+//           console.log('Error updating user data:', err);
+//           return res.status(400).json({
+//             RespCode: 400,
+//             RespMessage: 'bad: Unable to update user data',
+//             Log: 2
+//           });
+//         } else {
+//           console.log('User data updated successfully!');
 //           return res.status(200).json({
 //             RespCode: 200,
-//             RespMessage: 'successfully',
-//           })
+//             RespMessage: 'User data updated successfully!',
+//           });
 //         }
-//         else {
-//           console.log('ERR 2! : Update fail')
-//           return res.status(200).json({
-//             RespCode: 400,
-//             RespMessage: 'bad: Update fail',
-//             Log: 2
-//           })
-//         }
-//       })
-//     }
-//     else {
-//       console.log('ERR 1! : Invalid data')
-//       return res.status(200).json({
-//         RespCode: 400,
-//         RespMessage: 'bad: Invalid data',
+//       });
+//     } else {
+//       console.log('ERR 1! : Please provide necessary data for update')
+//       return res.status(401).json({
+//         RespCode: 401,
+//         RespMessage: 'bad: Please provide necessary data for update',
 //         Log: 1
 //       })
 //     }
 //   }
 //   catch(error) {
 //     console.log('ERR 0! :', error)
-//     return res.status(200).json({
-//       RespCode: 400,
-//       RespMessage: 'bad',
+//     return res.status(500).json({
+//       RespCode: 500,
+//       RespMessage: 'Error occurred. Please try again later',
 //       Log: 0
 //     })
 //   }
@@ -238,7 +244,7 @@ app.get('/apis/getallLogin', (req, res) => {
   
 //   try {
 //     if (id) {
-//       con.query('delete from tbl_logins where Id = ? ', [
+//       con.query('DELETE FROM tbl_logins WHERE Id = ? ', [
 //         parseInt(id)
 //       ], (err, resp, fil) => {
 //         if (resp) {
@@ -290,6 +296,7 @@ app.get("/test", (req, res) => {
     res.status(200).json({ data: results });
   });
 });
+
 app.get("/test/:Id", (req, res) => {
   const userId = req.params.Id;
   const query = "SELECT * FROM tbl_logins WHERE Id = ?"; 
